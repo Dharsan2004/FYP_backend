@@ -129,6 +129,44 @@ const PORT = process.env.PORT || 5000;
 // Middleware to enable CORS
 app.use(cors());
 
+
+
+app.get('/api/Gimages', async (req, res) => {
+  const query = req.query.query; // Get the search query from query parameters
+
+  if (!query) {
+    return res.status(400).json({ error: 'Query parameter is required' });
+  }
+
+  try {
+    // Make a request to the custom API
+    const apiUrl = `https://image-scrape-zk2o.onrender.com/get-images?query=${encodeURIComponent(query)}`;
+    const response = await fetch(apiUrl);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch data from the API. Status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // Extract the first image URL if available
+    const imageUrls = data.image_urls || [];
+    const firstImageUrl = imageUrls.length > 0 ? imageUrls[0] : null;
+
+    if (firstImageUrl) {
+      res.json({ imageUrl: firstImageUrl });
+    } else {
+      res.status(404).json({ error: 'No images found' });
+    }
+  } catch (error) {
+    console.error('Error fetching images:', error);
+    res.status(500).json({ error: 'Failed to fetch images' });
+  }
+});
+
+
+
+
 // Define the endpoint to get image URLs
 app.get('/api/images', async (req, res) => {
   const api_key = "cf826b41e9a3169af321e0f8281eaba86740aa78d3a4dd32e62aa3744cb06219"; // Your API key
